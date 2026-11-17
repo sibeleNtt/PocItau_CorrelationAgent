@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "change_number": "CHG612942",
+      "entidades": [
+        {
+          "nome": "payment-api-changepoc",
+          "tipo": "servico",
+          "subtipo": null,
+          "nome_original": "payment-api-changepoc",
+          "contexto": "\"service\": \"payment-api-changepoc\"; \"short_description\": \"Deployment do serviço - payment-api-changepoc\"; tag \"service:payment-api-changepoc\"",
+          "regra_extracao": "texto_exato",
+          "confianca": 0.97
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "source": "servicenow_collector"
+  }
+}

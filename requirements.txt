@@ -1,0 +1,8 @@
+boto3>=1.43.64,<2
+datadog-api-client>=2.60,<3
+mcp>=1.20,<2
+langchain-aws>=1.0,<2
+langgraph>=1.2,<2
+langgraph-checkpoint-aws>=1.2,<2
+pydantic>=2.10,<3
+python-dotenv>=1.0,<2

@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Stateless AIMO GMUD investigation Lambda
+
+Parameters:
+  DatadogApiKey:
+    Type: String
+    NoEcho: true
+  DatadogAppKey:
+    Type: String
+    NoEcho: true
+  DatadogSite:
+    Type: String
+    Default: datadoghq.com
+  BedrockModelId:
+    Type: String
+
+Resources:
+  InvestigationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      FunctionName: aimo-investigation-agent
+      Architectures: [x86_64]
+      MemorySize: 1024
+      Timeout: 900
+      Environment:
+        Variables:
+          DD_API_KEY: !Ref DatadogApiKey
+          DD_APP_KEY: !Ref DatadogAppKey
+          DD_SITE: !Ref DatadogSite
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+          LANGGRAPH_CHECKPOINT_TABLE: !Ref LangGraphCheckpointTable
+          LANGGRAPH_CHECKPOINT_TTL_SECONDS: "2592000"
+          INVESTIGATION_BASELINE_MINUTES: "60"
+          INVESTIGATION_WINDOW_MINUTES: "60"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Query
+                - dynamodb:BatchGetItem
+                - dynamodb:BatchWriteItem
+              Resource: !GetAtt LangGraphCheckpointTable.Arn
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+      DockerTag: python3.12-v1
+
+  LangGraphCheckpointTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+Outputs:
+  InvestigationFunctionArn:
+    Value: !GetAtt InvestigationFunction.Arn
+  LangGraphCheckpointTableName:
+    Value: !Ref LangGraphCheckpointTable
